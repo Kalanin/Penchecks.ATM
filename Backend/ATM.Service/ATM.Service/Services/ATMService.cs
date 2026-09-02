@@ -1,16 +1,32 @@
-﻿using ATM.Service.Models;
+﻿using System.Runtime.InteropServices.JavaScript;
+using ATM.Service.Models;
+using ATM.Service.Models.Responses;
 
 namespace ATM.Service.Services
 {
     public interface IATMService
     {
+        Task RegisterAccountData(List<Account> accounts);
+        List<Account> GetCurrentBalance();
+        List<HistoryResponse> GetTransactionHistory(HistoryType? type = null);
+        void DepositFunds(decimal amount, string accountName);
+        void WithdrawFunds(decimal amount, string accountName);
+        void TransferFunds(decimal amount, string fromAccountName, string toAccountName);
     }
 
     public class ATMService : IATMService
     {
         private Dictionary<string, Account> _accounts = new Dictionary<string, Account>();
-        private List<History> _transactionHistory = new List<History>(); //basic transation logging with string formatting, will adjust if time allows.
+        private List<History> _transactionHistory = new List<History>(); //basic transaction logging with string formatting, will adjust if time allows.
 
+        public ATMService()
+        {
+            _accounts = new Dictionary<string, Account>()
+            {
+                { "Checking", new Account() { Name = "Checking", Amount = 0 } },
+                { "Savings", new Account() { Name = "Savings", Amount = 0 } }
+            };
+        }
 
         //Use to seed data with initial API call. Acts as a reset of existing data, so it will wipe out any existing accounts and transaction history.
         public async Task RegisterAccountData(List<Account> accounts)
@@ -33,11 +49,16 @@ namespace ATM.Service.Services
             return _accounts.Values.ToList();
         }
 
-        public List<History> GetTransactionHistory(HistoryType? type = null)
+        public List<HistoryResponse> GetTransactionHistory(HistoryType? type = null)
         {
             var history = type == null ? _transactionHistory : _transactionHistory.Where(h => h.Type == type).ToList();
 
-            return history.OrderBy(h => h.Timestamp).ToList();
+            return history.OrderBy(h => h.Timestamp).Select(h => new HistoryResponse
+            {
+                Timestamp = h.Timestamp,
+                Type = h.Type.ToString(),
+                Log = h.Log
+            }).ToList();
         }
 
         public void DepositFunds(decimal amount, string accountName)
@@ -52,7 +73,7 @@ namespace ATM.Service.Services
                 {
                     Timestamp = DateTime.UtcNow,
                     Type = HistoryType.Deposit,
-                    Log = $"Deposited {formattedAmount} to {accountName}. New balance: {_accounts[accountName].Amount}"
+                    Log = $"Deposited ${formattedAmount:0.00} to {accountName}. New balance: ${_accounts[accountName].Amount:0.00}"
                 });
             }
         }
@@ -64,7 +85,7 @@ namespace ATM.Service.Services
                 if (amount > _accounts[accountName].Amount)
                 {
                     throw new ArgumentException(
-                        $"Insufficient funds in account {accountName}. Current balance: {_accounts[accountName].Amount}");
+                        $"Insufficient funds in account {accountName}. Current balance: ${_accounts[accountName].Amount:0.00}");
                 }
 
                 var formattedAmount = RoundToTwoDecimalPlaces(amount);
@@ -75,18 +96,22 @@ namespace ATM.Service.Services
                 {
                     Timestamp = DateTime.UtcNow,
                     Type = HistoryType.Withdrawal,
-                    Log = $"Withdrew {formattedAmount} from {accountName}. New balance: {_accounts[accountName].Amount}"
+                    Log = $"Withdrew ${formattedAmount:0.00} from {accountName}. New balance: {_accounts[accountName].Amount:0.00}"
                 });
             }
         }
-
         public void TransferFunds(decimal amount, string fromAccountName, string toAccountName)
         {
             if (IsAmountValid(amount) && IsAccountValid(fromAccountName) && IsAccountValid(toAccountName))
             {
+                if (fromAccountName == toAccountName)
+                {
+                    return; //no action needed and no history to adjust here.
+                }
+
                 if (amount > _accounts[fromAccountName].Amount)
                 {
-                    throw new ArgumentException($"Insufficient funds in account {fromAccountName}. Current balance: {_accounts[fromAccountName].Amount}");
+                    throw new ArgumentException($"Insufficient funds in account {fromAccountName}. Current balance: ${_accounts[fromAccountName].Amount:0.00}");
                 }
 
                 var formattedAmount = RoundToTwoDecimalPlaces(amount);
@@ -94,10 +119,11 @@ namespace ATM.Service.Services
                 _accounts[fromAccountName].Amount -= formattedAmount;
                 _accounts[toAccountName].Amount += formattedAmount;
 
-                AddHistory(HistoryType.Transfer, $"Transferred {formattedAmount} from {fromAccountName} to {toAccountName}. New balances: {fromAccountName}: {_accounts[fromAccountName].Amount}, {toAccountName}: {_accounts[toAccountName].Amount}");
+                AddHistory(HistoryType.Transfer, $"Transferred {formattedAmount:0.00} from {fromAccountName} to {toAccountName}. New balances: {fromAccountName}: ${_accounts[fromAccountName].Amount:0.00}, {toAccountName}: ${_accounts[toAccountName].Amount:0.00}");
             }
         }
 
+        #region PrivateMethods
         private decimal RoundToTwoDecimalPlaces(decimal amount)
         {
             return Math.Floor(amount * 100) / 100;
@@ -133,5 +159,7 @@ namespace ATM.Service.Services
 
             return true;
         }
+
+        #endregion
     }
 }
