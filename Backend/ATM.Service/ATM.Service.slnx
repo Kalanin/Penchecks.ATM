@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="ATM.Service.UnitTests/ATM.Service.UnitTests.csproj" Id="9ac6af77-921c-43ad-9a57-a61e60b3e07c" />
   <Project Path="ATM.Service/ATM.Service.csproj" />
 </Solution>

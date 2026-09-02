@@ -1,11 +1,13 @@
 using ATM.Service.Models;
 using ATM.Service.Models.Requests;
 using ATM.Service.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ATM.Service.Controllers
 {
     [ApiController]
+    [AllowAnonymous]
     [Route("[controller]")]
     public class ATMController(IATMService atmService) : ControllerBase
     {

@@ -6,7 +6,7 @@ namespace ATM.Service.Services
 {
     public interface IATMService
     {
-        Task RegisterAccountData(List<Account> accounts);
+        void RegisterAccountData(List<Account> accounts);
         List<Account> GetCurrentBalance();
         List<HistoryResponse> GetTransactionHistory(HistoryType? type = null);
         void DepositFunds(decimal amount, string accountName);
@@ -16,20 +16,15 @@ namespace ATM.Service.Services
 
     public class ATMService : IATMService
     {
-        private Dictionary<string, Account> _accounts = new Dictionary<string, Account>();
-        private List<History> _transactionHistory = new List<History>(); //basic transaction logging with string formatting, will adjust if time allows.
-
-        public ATMService()
+        private Dictionary<string, Account> _accounts = new()
         {
-            _accounts = new Dictionary<string, Account>()
-            {
-                { "Checking", new Account() { Name = "Checking", Amount = 0 } },
-                { "Savings", new Account() { Name = "Savings", Amount = 0 } }
-            };
-        }
+            { "Checking", new Account() { Name = "Checking", Amount = 0 } },
+            { "Savings", new Account() { Name = "Savings", Amount = 0 } }
+        };
+        private readonly List<History> _transactionHistory = new List<History>(); //basic transaction logging with string formatting, will adjust if time allows.
 
         //Use to seed data with initial API call. Acts as a reset of existing data, so it will wipe out any existing accounts and transaction history.
-        public async Task RegisterAccountData(List<Account> accounts)
+        public void RegisterAccountData(List<Account>? accounts)
         {
             if (accounts == null || accounts.Count == 0)
             {
