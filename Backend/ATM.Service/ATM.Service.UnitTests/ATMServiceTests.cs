@@ -12,7 +12,7 @@ namespace ATM.Service.UnitTests
     {
 
         [TestFixture]
-        public class RegisterTests
+        public class AccountRegisterTests : ATMServiceTests
         {
             private ATMService _sut;
 
@@ -23,7 +23,7 @@ namespace ATM.Service.UnitTests
             }
 
             [Test]
-            public void ShouldSetUpBasicAccount()
+            public void Should_SetUpBasicAccount()
             {
 
                 var accounts = _sut.GetCurrentBalance();
@@ -35,7 +35,7 @@ namespace ATM.Service.UnitTests
             }
 
             [Test]
-            public void ShouldSetPresetDataAndWipeHistory()
+            public void Should_SetPresetData_And_WipeHistory()
             {
                 var presetData = new List<Account>()
                 {
@@ -73,6 +73,78 @@ namespace ATM.Service.UnitTests
                 Assert.IsNotNull(history);
                 Assert.IsEmpty(history);
             }
+        }
+
+        public class AccountFeatureTests : ATMServiceTests
+        {
+            private ATMService _sut;
+
+            [SetUp]
+            public void SetUp()
+            {
+                _sut = new ATMService();
+
+                var presetData = new List<Account>()
+                {
+                    new Account()
+                    {
+                        Name = "Checking",
+                        Amount = 10000
+                    },
+                    new Account()
+                    {
+                        Name = "Savings",
+                        Amount = 0
+                    },
+                };
+
+                _sut.RegisterAccountData(presetData);
+            }
+
+            #region Deposit Tests
+
+            [Test]
+            public void Should_DepositAmount()
+            {
+                _sut.DepositFunds(500.45m, "Checking");
+
+                var accounts = _sut.GetCurrentBalance();
+
+                var checking = accounts.First(a => a.Name == "Checking");
+
+                Assert.IsNotNull(checking);
+                Assert.AreEqual(10500.45m, checking.Amount);
+
+                var history = _sut.GetTransactionHistory();
+                Assert.IsNotNull(history);
+                Assert.IsNotEmpty(history);
+                Assert.AreEqual(history[0].Log, "Deposited $500.45 to Checking. New balance: $10500.45");
+                Assert.AreEqual(history[0].Type, nameof(HistoryType.Deposit));
+            }
+
+            //public void Should_ThrowException_WhenInputIsNegative()
+            //{
+
+            //}
+
+            //public void Should_ThrowException_WhenInputIsNegative()
+            //{
+
+            //}
+
+            //public void Should_ThrowException_WhenInputIsNegative()
+            //{
+
+            //}
+            #endregion
+
+
+            #region Withdraw Tests
+            #endregion
+
+
+            #region Transfer Tests
+            #endregion
         }
     }
 }

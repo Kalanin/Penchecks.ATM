@@ -91,7 +91,7 @@ namespace ATM.Service.Services
                 {
                     Timestamp = DateTime.UtcNow,
                     Type = HistoryType.Withdrawal,
-                    Log = $"Withdrew ${formattedAmount:0.00} from {accountName}. New balance: {_accounts[accountName].Amount:0.00}"
+                    Log = $"Withdrew ${formattedAmount:0.00} from {accountName}. New balance: ${_accounts[accountName].Amount:0.00}"
                 });
             }
         }
@@ -114,7 +114,7 @@ namespace ATM.Service.Services
                 _accounts[fromAccountName].Amount -= formattedAmount;
                 _accounts[toAccountName].Amount += formattedAmount;
 
-                AddHistory(HistoryType.Transfer, $"Transferred {formattedAmount:0.00} from {fromAccountName} to {toAccountName}. New balances: {fromAccountName}: ${_accounts[fromAccountName].Amount:0.00}, {toAccountName}: ${_accounts[toAccountName].Amount:0.00}");
+                AddHistory(HistoryType.Transfer, $"Transferred ${formattedAmount:0.00} from {fromAccountName} to {toAccountName}. New balances: {fromAccountName}: ${_accounts[fromAccountName].Amount:0.00}, {toAccountName}: ${_accounts[toAccountName].Amount:0.00}");
             }
         }
 

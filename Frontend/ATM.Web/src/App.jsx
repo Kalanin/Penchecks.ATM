@@ -3,23 +3,30 @@ import AccountList from './components/AccountList'
 import ActionButtons from './components/ActionButtons'
 import AmountForm from './components/AmountForm'
 import TransferForm from './components/TransferForm'
-import { deposit, getAccounts, transfer, withdraw } from './api/atmApi'
+import TransactionHistory from './components/TransactionHistory'
+import { deposit, getAccounts, getHistory, transfer, withdraw } from './api/atmApi'
 import './App.css'
 
 function App() {
   const [accounts, setAccounts] = useState([])
+  const [history, setHistory] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [selectedAction, setSelectedAction] = useState(null)
 
-  const loadAccounts = useCallback(async (signal) => {
+  const refresh = useCallback(async (signal) => {
     try {
-      const data = await getAccounts(signal)
-      setAccounts(data)
+      const [accountData, historyData] = await Promise.all([
+        getAccounts(signal),
+        getHistory(signal),
+      ])
+
+      setAccounts(accountData)
+      setHistory(historyData)
       setError(null)
     } catch (err) {
       if (err.name !== 'AbortError') {
-        setError('Could not load accounts. Is the backend running?')
+        setError('Could not load data. Is the backend running?')
       }
     } finally {
       setLoading(false)
@@ -29,21 +36,21 @@ function App() {
   useEffect(() => {
     const controller = new AbortController()
 
-    loadAccounts(controller.signal)
+    refresh(controller.signal)
 
     return () => controller.abort()
-  }, [loadAccounts])
+  }, [refresh])
 
   async function handleTransaction(accountName, amount) {
     const submit = selectedAction === 'Deposit' ? deposit : withdraw
 
     await submit(accountName, amount)
-    await loadAccounts()
+    await refresh()
   }
 
   async function handleTransfer(fromAccount, toAccount, amount) {
     await transfer(fromAccount, toAccount, amount)
-    await loadAccounts()
+    await refresh()
   }
 
   return (
@@ -74,6 +81,15 @@ function App() {
         {selectedAction === 'Transfer' && (
           <TransferForm accounts={accounts} onSubmit={handleTransfer} />
         )}
+      </section>
+
+      <section className="panel">
+        <h2>Transaction History</h2>
+        <TransactionHistory
+          history={history}
+          loading={loading}
+          error={error}
+        />
       </section>
     </main>
   )

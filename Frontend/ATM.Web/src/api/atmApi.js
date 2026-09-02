@@ -37,6 +37,11 @@ export async function getAccounts(signal) {
   return response.json()
 }
 
+export async function getHistory(signal) {
+  const response = await request('/history', { signal })
+  return response.json()
+}
+
 export async function deposit(accountName, amount) {
   await postTransaction('/deposit', { accountName, amount })
 }

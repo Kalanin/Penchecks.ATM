@@ -119,3 +119,33 @@
   opacity: 0.6;
   cursor: default;
 }
+
+.history {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 15px;
+}
+
+.history th,
+.history td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+.history th {
+  color: var(--text-h);
+  font-weight: 500;
+}
+
+.history tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.history-timestamp {
+  font-family: var(--mono);
+  white-space: nowrap;
+}
