@@ -6,3 +6,5 @@
 /Backend/ATM.Service/.vs
 /Backend/ATM.Service/ATM.Service/obj
 /Backend/ATM.Service/ATM.Service/bin/Debug/net10.0
+/Backend/ATM.Service/ATM.Service.UnitTests/bin/Debug/net10.0
+/Backend/ATM.Service/ATM.Service.UnitTests/obj
