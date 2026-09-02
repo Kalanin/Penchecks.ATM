@@ -30,9 +30,14 @@ namespace ATM.Service.Services
             {
                 return;
             }
+
+            _accounts.Clear();
             
             accounts.ForEach(account =>
             {
+                if (account.Amount <= 0)
+                    account.Amount = 0;
+
                 _accounts[account.Name] = account; //doesn't matter if account already exists, we want to overwrite it with the new data
             });
 

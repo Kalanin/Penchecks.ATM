@@ -34,7 +34,7 @@ function App() {
   }, [])
 
   useEffect(() => {
-    const controller = new AbortController()
+    const controller = new AbortController() // AbortController allows us to cancel the fetch requests if the component unmounts. Useful if we switch buttons quickly.
 
     refresh(controller.signal)
 
