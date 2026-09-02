@@ -139,7 +139,7 @@ namespace ATM.Service.Services
         {
             if (amount <= 0)
             {
-                throw new ArgumentException("Deposit amount must be positive.");
+                throw new ArgumentException("Amount must be positive.");
             }
 
             return true;
