@@ -37,6 +37,8 @@ namespace ATM.Service.Services
             {
                 if (account.Amount <= 0)
                     account.Amount = 0;
+                else
+                    account.Amount = RoundToTwoDecimalPlaces(account.Amount);
 
                 _accounts[account.Name] = account; //doesn't matter if account already exists, we want to overwrite it with the new data
             });
